@@ -1,9 +1,9 @@
 ![discord](https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png)
 
 # xm-discord-bot
-Repositório destinado ao Projeto de Discord Bot do Grupo do Robô Xeque Mate.
+Git repository for the Bot Discord Project of the Group Xeque-Mate's Robot.
 
-# Prerequisites
+# Pre requisites
 
 * Must have installed Node JS
 * Must have Git installed
@@ -14,4 +14,12 @@ Repositório destinado ao Projeto de Discord Bot do Grupo do Robô Xeque Mate.
 
 # Running Server
 
-Simply run the command `node bot.js`
+* Simply run the command `node bot.js`
+
+# Observation
+
+* File `auth.json` contains the token to conect to the bot, it NEVER can be shared.
+
+# Discord Group
+
+* [xeque-mate](https://discord.gg/JeK5RRc)
