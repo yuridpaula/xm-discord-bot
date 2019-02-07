@@ -1,0 +1,23 @@
+{
+    "name": "xm-discord-bot",
+    "version": "1.0.0",
+    "description": "Repositório destinado ao Projeto de Discord Bot do Grupo do Robô Xeque Mate.",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/yuridpaula/xm-discord-bot.git"
+    },
+    "author": "Yuri de Paula",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/yuridpaula/xm-discord-bot/issues"
+    },
+    "homepage": "https://github.com/yuridpaula/xm-discord-bot#readme",
+    "dependencies": {
+        "discord.js": "^11.4.2",
+        "winston": "^2.3.1"
+    }
+}

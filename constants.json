@@ -1,0 +1,12 @@
+{
+    "stringSeparator": " ",
+    "initialText": ":robot: **Atenção {user}!!** \n",
+    "finalText": "\n\nNão me leve a mal, é só pra manter a organização aqui!:sunglasses: ",
+    "replaceConsts": [
+        "bemVindoChannel",
+        "generalChannel"
+    ],
+    "bemVindoChannel": "542759017165094962",
+    "generalChannel": "542759017165094962"
+
+}
