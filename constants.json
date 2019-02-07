@@ -3,10 +3,10 @@
     "initialText": ":robot: **Atenção {user}!!** \n",
     "finalText": "\n\nNão me leve a mal, é só pra manter a organização aqui!:sunglasses: ",
     "replaceConsts": [
-        "bemVindoChannel",
+        "welcomeChannel",
         "generalChannel"
     ],
-    "bemVindoChannel": "542759017165094962",
-    "generalChannel": "542759017165094962"
+    "welcomeChannel": "543090620009414656",
+    "generalChannel": "543090620009414656"
 
 }

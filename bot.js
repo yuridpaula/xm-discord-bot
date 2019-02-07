@@ -1,7 +1,7 @@
 const { Client, Attachment } = require('discord.js');
 
 let logger = require('winston')
-let auth = require('./auth.json')
+let auth = require('../auth.json')
 let basics = require("./basics.json")
 let constants = require("./constants.json")
 
