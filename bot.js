@@ -5,7 +5,7 @@ let auth = require('./auth.json')
 let basics = require("./basics.json")
 let constants = require("./constants.json")
 
-// Configura logger
+// logger configuration
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
     colorize: true
@@ -13,45 +13,44 @@ logger.add(logger.transports.Console, {
 logger.level = 'debug'
 
 
-// Inicialização do bot
+// initialize bot
 let client = new Client()
 client.login(auth.token)
 
-//Validação da inicialização do bot
+//initialization validation
 client.on('ready', (event) => {
     logger.info(`${client.user.tag} Conectado!!`)
 })
 
 
-//listener das mensagens no server
+//listener of messages server
 client.on('message', (msg) => {
 
-    //verifica se tem alguma menção
+    //verify mentions
     if (msg.mentions.members.first() !== undefined) {
-        //monta uma collection de menções, tirando o bot (pra não precisar controlar os index)
+        //mentions collections without bot mention
         let mentions = msg.mentions.users.filter(f => f.id !== client.user.id)
 
-        //se for diferente o tamanho, é porque tinha menção ao bot
+        //compare both for identify bot mentions
         if (mentions.size !== msg.mentions.users.size) {
 
-            //monta a mensagem com apenas um espaço entre as palavras, caso tenha mais de uma
+            // reorganize content 
             message = msg.content.replace(/  +/g, constants.stringSeparator)
 
-            //monta um array separando pelo delimitador padrão
             let args = message.split(constants.stringSeparator)
 
-            //pega o texto em basics, de acordo com o argumento enviado na mensagem
+            //verify basic text
             let txt = basics[args[1]]
 
             if (txt !== undefined) {
                 txt = constants.initialText + txt + constants.finalText
 
-                //percorre o json de constantes, fazendo as alterações, caso tenha
+                //update of constants
                 constants.replaceConsts.forEach((c) => {
                     txt = txt.replace(c, constants[c])
                 })
 
-                //inclui menção ao usuário, caso tenha sido enviado o argumento
+                //user mention
                 let user = ''
                 if (mentions.size == 1) {
                     user = `<@${mentions.first().id}>`
@@ -65,7 +64,7 @@ client.on('message', (msg) => {
                 msg.channel.send(new Attachment(`./imagens/${args[2]}.png`));
             }
 
-            //deleta a mensagem que disparou a execução do bot
+            //delete message that triggered the bot
             msg.delete()
         }
 
