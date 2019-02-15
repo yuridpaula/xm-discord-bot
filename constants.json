@@ -1,12 +1,22 @@
 {
+    "canSendGainLoss": true,
     "stringSeparator": " ",
     "initialText": ":robot: **Atenção {user}!!** \n",
-    "finalText": "\n\nNão me leve a mal, é só pra manter a organização aqui!:sunglasses: ",
     "replaceConsts": [
         "welcomeChannel",
-        "generalChannel"
+        "generalChannel",
+        "gainLossChannel",
+        "storyTellerChannel",
+        "tutorialChannel",
+        "marginLimit",
+        "finalText"
     ],
-    "welcomeChannel": "543090620009414656",
-    "generalChannel": "543090620009414656"
-
+    "welcomeChannel": "525399168538116117",
+    "generalChannel": "527898002757648408",
+    "gainLossChannel": "525282202590773249",
+    "storyTellerChannel": "526897481380921364",
+    "testBotChannel": "544586950905167874",
+    "tutorialChannel": "527898002757648408",
+    "marginLimit": "R$1.400,00",
+    "finalText": "\n\nNão me leve a mal, é só pra manter a organização aqui!:sunglasses: "
 }

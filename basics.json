@@ -1,9 +1,12 @@
 {
-    "canal": "Esse não é o canal correto para essa discussão, por favor, utilize o canal correto!!",
-    "manual": "Não é permitido comentar sobre operações manuais nesse servidor!!",
-    "margem": "A margem atual **RECOMENDADA** é de R$1400,00 por contrato, porém, fica a critério de cada um o valor que irá usar.",
-    "outro-robo": "Não é permitido comentar sobre outros robos nesse servidor!!",
-    "teoria": "Ao entrar aqui, você foi direcionado para o canal <#welcomeChannel>, onde encontra-se a teoria. \nPor favor, leia **TUDO** antes de qualquer pergunta!",
+    "canal": "Esse não é o canal correto para essa discussão, por favor, utilize o canal correto!! finalText",
+    "historico": "Uma maneira simples é fazer backtest, os resultados ficam bem próximos dos reais. finaltext",
+    "manual": "Não é permitido comentar sobre operações manuais nesse servidor!! finalText",
+    "margem": "A margem atual **RECOMENDADA** é de **marginLimit** por contrato, porém, fica a critério de cada um o valor que irá usar. finalText",
+    "outro-robo": "Não é permitido comentar sobre outros robos nesse servidor!! finalText",
+    "pattern-gain-loss": "Você não está respeitando o padrão de mensagem solicitado para o canal. Por favor seguir: \n**Dia DD/MM/AAAA ganhei/perdi XXXX pontos com o XM na corretora YYYYYY com cloud WWWWW!!** finalText",
+    "teoria": "Ao entrar aqui, você foi direcionado para o canal <#welcomeChannel>, onde encontra-se a teoria. \nPor favor, leia **TUDO** antes de qualquer pergunta! finalText",
+    "troca-contrato": "A troca de contrato ocorre sempre na **quarta-feira mais próxima do dia 15, nos meses pares do ano**. \n Em caso de dúvidas, temos uma imagem no <#tutorialChannel> que pode te ajudar ",
 
     "xm": "XMBot chegou!! :sunglasses:"
 

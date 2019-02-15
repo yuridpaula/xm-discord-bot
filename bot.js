@@ -5,13 +5,14 @@ let auth = require('../auth.json')
 let basics = require("./basics.json")
 let constants = require("./constants.json")
 
+
+/*************************************************** initialization ***************************************************/
 // logger configuration
-logger.remove(logger.transports.Console);
+logger.remove(logger.transports.Console)
 logger.add(logger.transports.Console, {
     colorize: true
-});
+})
 logger.level = 'debug'
-
 
 // initialize bot
 let client = new Client()
@@ -22,9 +23,13 @@ client.on('ready', (event) => {
     logger.info(`${client.user.tag} Conectado!!`)
 })
 
+/*************************************************** messages control ***************************************************/
 
 //listener of messages server
 client.on('message', (msg) => {
+
+    //specific channel messages
+    sendSpecificChannelMessage(msg)
 
     //verify mentions
     if (msg.mentions.members.first() !== undefined) {
@@ -34,40 +39,140 @@ client.on('message', (msg) => {
         //compare both for identify bot mentions
         if (mentions.size !== msg.mentions.users.size) {
 
-            // reorganize content 
-            message = msg.content.replace(/  +/g, constants.stringSeparator)
-
-            let args = message.split(constants.stringSeparator)
+            let args = reoganizeContent(msg.content)
 
             //verify basic text
             let txt = basics[args[1]]
 
             if (txt !== undefined) {
-                txt = constants.initialText + txt + constants.finalText
+                txt = constants.initialText + txt
 
-                //update of constants
-                constants.replaceConsts.forEach((c) => {
-                    txt = txt.replace(c, constants[c])
-                })
+                txt = replaceConstants(txt, mentions)
 
-                //user mention
-                let user = ''
-                if (mentions.size == 1) {
-                    user = `<@${mentions.first().id}>`
-                }
-                txt = txt.replace('{user}', user)
-
-                msg.channel.send(txt)
+                msg.channel.send(txt).then(console.log)
 
             } else if (args[1] === 'imagem') {
 
                 msg.channel.send(new Attachment(`./imagens/${args[2]}.png`));
+            } else if (args[1] === 'clean') {
+                msg.channel.send(`!clean <@${client.user.id}>`)
             }
 
             //delete message that triggered the bot
             msg.delete()
         }
-
     }
-
 })
+
+
+//listener for specific channel
+function sendSpecificChannelMessage(msg) {
+    //gainLoss channel
+    if (msg.channel.id === constants.gainLossChannel && msg.author.id !== client.user.id && constants.canSendGainLoss) {
+
+        let args = reoganizeContent(msg.content)
+
+        let onlyNumbers = false
+
+        args.forEach((a) => {
+            onlyNumbers = onlyNumbers || (a.match(/\d+/g) !== null)
+        })
+
+        if (!onlyNumbers) {
+            let txt = constants.initialText + basics['pattern-gain-loss']
+
+            //specific author mention
+            txt = txt.replace('{user}', `<@${ msg.author.id}>`)
+
+            txt = replaceConstants(txt)
+
+            msg.channel.send(txt)
+
+            msg.delete()
+        }
+    }
+}
+
+/*************************************************** Auxiliary functions ***************************************************/
+
+//update of constants
+function replaceConstants(txt, mentions) {
+    constants.replaceConsts.forEach((c) => {
+        txt = txt.replace(c, constants[c])
+    })
+
+    //user mention
+    let user = ''
+
+    if (mentions !== undefined)
+        if (mentions.size == 1) {
+            user = `<@${mentions.first().id}>`
+        }
+    txt = txt.replace('{user}', user)
+
+    return txt
+}
+
+// reorganize content 
+function reoganizeContent(content) {
+    return content.replace(/  +/g, constants.stringSeparator).split(constants.stringSeparator)
+}
+
+/*************************************************** Time Controllers ***************************************************/
+let now = new Date()
+
+//calc the diff between now and 9AM, in ms
+let millisTo9 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0, 0) - now
+if (millisTo9 < 0) {
+    millisTo9 += 86400000
+}
+//calc the diff between now and 13AM, in ms
+let millisTo13 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 13, 0, 0, 0) - now
+if (millisTo13 < 0) {
+    millisTo13 += 86400000
+}
+
+/*************************************************** StoryTeller Control ***************************************************/
+//start storyTeller
+setTimeout(() => {
+    startStoryTeller()
+}, millisTo9)
+
+//stop storyTeller
+setTimeout(() => {
+    stopStoryteller()
+}, millisTo13)
+
+//controller of execution
+let storyTeller
+
+//control of execution timer, repeat after 15 minute
+function startStoryTeller() {
+    storyTeller = setInterval(() => {
+            storyTellerSender('Narrador automático. Enviando mensagem a cada 15 minutos!')
+        }, (1000 * 60 * 15)) //ms ss mi
+}
+
+//clear the execution of interval
+function stopStoryteller() {
+    clearInterval(storyTeller)
+}
+
+//encapsulated send message
+function storyTellerSender(txt) {
+    let msg = `**:microphone2: XMBot Narrador Oficial! :microphone2:** \n${new Date().toLocaleTimeString()} - ${txt}`
+
+    //client.channels.get(constants.storyTellerChannel).send(msg)
+    console.log(msg)
+}
+
+/*************************************************** Clean Bot Messages Controller ***************************************************/
+//start cleaning at 9:00 AM, and repeat after one hour
+setTimeout(() => {
+    setInterval(() => {
+            let msg = `!clean <@${client.user.id}>`
+
+            //client.channels.get(constants.testBotChannel).send(msg)
+            console.log(msg)
+        }, (1000 * 60 * 60)) //ms ss mi
+}, millisTo9)
