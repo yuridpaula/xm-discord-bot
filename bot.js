@@ -5,7 +5,6 @@ let auth = require('../auth.json')
 let basics = require("./basics.json")
 let constants = require("./constants.json")
 
-
 /*************************************************** initialization ***************************************************/
 // logger configuration
 logger.remove(logger.transports.Console)
@@ -49,13 +48,21 @@ client.on('message', (msg) => {
 
                 txt = replaceConstants(txt, mentions)
 
-                msg.channel.send(txt).then(console.log)
+                msg.channel.send(txt)
+                    .then((message) => {
+                        setTimeout(() => {
+                            message.delete()
+                        }, constants.millisToDeleteBotMessage)
+                    })
 
             } else if (args[1] === 'imagem') {
 
-                msg.channel.send(new Attachment(`./imagens/${args[2]}.png`));
-            } else if (args[1] === 'clean') {
-                msg.channel.send(`!clean <@${client.user.id}>`)
+                msg.channel.send(new Attachment(`./imagens/${args[2]}.png`))
+                    .then((message) => {
+                        setTimeout(() => {
+                            message.delete()
+                        }, constants.millisToDeleteBotMessage)
+                    })
             }
 
             //delete message that triggered the bot
@@ -73,12 +80,22 @@ function sendSpecificChannelMessage(msg) {
         let args = reoganizeContent(msg.content)
 
         let onlyNumbers = false
+        let hasCorretora = false
+        let hasCloud = false
+        let hasPontos = false
 
         args.forEach((a) => {
             onlyNumbers = onlyNumbers || (a.match(/\d+/g) !== null)
+            hasCorretora = hasCorretora || a.toString().toLowerCase() === 'corretora'
+            hasCloud = hasCloud || a.toString().toLowerCase() === 'cloud'
+            hasPontos = hasPontos || a.toString().toLowerCase() === 'pontos'
         })
 
-        if (!onlyNumbers) {
+        if (!(onlyNumbers && //Some word with only number
+                hasCorretora && // The word 'corretora' in the message
+                hasCloud && // The word 'cloud' in the message
+                hasPontos) // The word 'pontos' in the message
+        ) {
             let txt = constants.initialText + basics['pattern-gain-loss']
 
             //specific author mention
@@ -87,6 +104,11 @@ function sendSpecificChannelMessage(msg) {
             txt = replaceConstants(txt)
 
             msg.channel.send(txt)
+                .then((message) => {
+                    setTimeout(() => {
+                        message.delete()
+                    }, constants.millisToDeleteBotMessage)
+                })
 
             msg.delete()
         }
@@ -162,17 +184,6 @@ function stopStoryteller() {
 function storyTellerSender(txt) {
     let msg = `**:microphone2: XMBot Narrador Oficial! :microphone2:** \n${new Date().toLocaleTimeString()} - ${txt}`
 
-    //client.channels.get(constants.storyTellerChannel).send(msg)
+    //client.channels.get(constants.testBotChannel.toString()).send(msg)
     console.log(msg)
 }
-
-/*************************************************** Clean Bot Messages Controller ***************************************************/
-//start cleaning at 9:00 AM, and repeat after one hour
-setTimeout(() => {
-    setInterval(() => {
-            let msg = `!clean <@${client.user.id}>`
-
-            //client.channels.get(constants.testBotChannel).send(msg)
-            console.log(msg)
-        }, (1000 * 60 * 60)) //ms ss mi
-}, millisTo9)

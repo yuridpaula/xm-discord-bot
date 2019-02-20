@@ -2,6 +2,7 @@
     "canSendGainLoss": true,
     "stringSeparator": " ",
     "initialText": ":robot: **Atenção {user}!!** \n",
+    "millisToDeleteBotMessage": 60000,
     "replaceConsts": [
         "welcomeChannel",
         "generalChannel",
@@ -15,7 +16,7 @@
     "generalChannel": "527898002757648408",
     "gainLossChannel": "525282202590773249",
     "storyTellerChannel": "526897481380921364",
-    "testBotChannel": "544586950905167874",
+    "testBotChannel": "543090620009414656",
     "tutorialChannel": "527898002757648408",
     "marginLimit": "R$1.400,00",
     "finalText": "\n\nNão me leve a mal, é só pra manter a organização aqui!:sunglasses: "
