@@ -1,8 +1,11 @@
 {
     "canSendGainLoss": true,
+    "canStoryTellerSend": true,
     "stringSeparator": " ",
     "initialText": ":robot: **Atenção {user}!!** \n",
     "millisToDeleteBotMessage": 60000,
+    "hourStart": 9,
+    "hourStop": 13,
     "replaceConsts": [
         "welcomeChannel",
         "generalChannel",

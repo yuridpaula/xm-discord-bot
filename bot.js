@@ -4,6 +4,16 @@ let logger = require('winston')
 let auth = require('../auth.json')
 let basics = require("./basics.json")
 let constants = require("./constants.json")
+let stMessages = require('./storyTellerMessages.json')
+
+//the require iniciate the server automatic
+let server = require('./app/server.js')
+
+//singleton instance of data
+let general = require('./app/models/generalModel')
+
+//for not cache de print image
+const moment = require('moment')
 
 /*************************************************** initialization ***************************************************/
 // logger configuration
@@ -49,20 +59,24 @@ client.on('message', (msg) => {
                 txt = replaceConstants(txt, mentions)
 
                 msg.channel.send(txt)
-                    .then((message) => {
+                    /*.then((message) => {
                         setTimeout(() => {
                             message.delete()
                         }, constants.millisToDeleteBotMessage)
-                    })
+                    })*/
 
             } else if (args[1] === 'imagem') {
 
                 msg.channel.send(new Attachment(`./imagens/${args[2]}.png`))
-                    .then((message) => {
+                    /*.then((message) => {
                         setTimeout(() => {
                             message.delete()
                         }, constants.millisToDeleteBotMessage)
-                    })
+                    })*/
+            } else if (args[1] === 'print') {
+                const url = `https://ashita.com.br/xmprint?t=${moment().format()}`
+
+                msg.channel.send(url)
             }
 
             //delete message that triggered the bot
@@ -116,7 +130,6 @@ function sendSpecificChannelMessage(msg) {
 }
 
 /*************************************************** Auxiliary functions ***************************************************/
-
 //update of constants
 function replaceConstants(txt, mentions) {
     constants.replaceConsts.forEach((c) => {
@@ -143,13 +156,13 @@ function reoganizeContent(content) {
 /*************************************************** Time Controllers ***************************************************/
 let now = new Date()
 
-//calc the diff between now and 9AM, in ms
-let millisTo9 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0, 0) - now
+//calc the diff between now and hourStart, in ms
+let millisTo9 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), constants.hourStart, 0, 0, 0) - now
 if (millisTo9 < 0) {
     millisTo9 += 86400000
 }
-//calc the diff between now and 13AM, in ms
-let millisTo13 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 13, 0, 0, 0) - now
+//calc the diff between now and hourStop, in ms
+let millisTo13 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), constants.hourStop, 0, 0, 0) - now
 if (millisTo13 < 0) {
     millisTo13 += 86400000
 }
@@ -160,6 +173,18 @@ setTimeout(() => {
     startStoryTeller()
 }, millisTo9)
 
+const hourNow = new Date().getHours()
+
+//start story teller if it's between time execution
+if (hourNow > constants.hourStart && hourNow < constants.hourStop) {
+    //if (hourNow > constants.hourStart && hourNow < 14) {
+    //wait server initiate, to start storyTeller
+    console.log('Iniciado por estar dentro do intervalo de horas (não foi agendado!)')
+    setTimeout(() => {
+        startStoryTeller()
+    }, constants.millisToDeleteBotMessage)
+}
+
 //stop storyTeller
 setTimeout(() => {
     stopStoryteller()
@@ -168,22 +193,69 @@ setTimeout(() => {
 //controller of execution
 let storyTeller
 
-//control of execution timer, repeat after 15 minute
+//control of execution timer
 function startStoryTeller() {
+
+    let message = `Iniciado em  ${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString()}\n`
+    message += `Corretora: **${general.getServerData().broker}**\n`
+    message += `Servidor: **${general.getServerData().server}**\n`
+    message += 'Lembrando que podem haver divergencias de valores entre corretoras, inclusive entre contas na mesma corretora!'
+
+    storyTellerSender(message)
+
     storyTeller = setInterval(() => {
-            storyTellerSender('Narrador automático. Enviando mensagem a cada 15 minutos!')
-        }, (1000 * 60 * 15)) //ms ss mi
+        let msg = getStMessage()
+        if (msg !== undefined) {
+            storyTellerSender(msg)
+        }
+    }, constants.millisToDeleteBotMessage)
 }
 
 //clear the execution of interval
 function stopStoryteller() {
+    storyTellerSender('Finalizado em ' + new Date().toLocaleDateString() + ' - ' + new Date().toLocaleTimeString())
     clearInterval(storyTeller)
 }
 
+//control of las index sended
+let lastIndex = -1
+
 //encapsulated send message
 function storyTellerSender(txt) {
-    let msg = `**:microphone2: XMBot Narrador Oficial! :microphone2:** \n${new Date().toLocaleTimeString()} - ${txt}`
+    if (constants.canStoryTellerSend) {
+        let msg = `**:microphone2: XMBot Narrador Oficial! :microphone2:** \n${txt}`
+            //console.log(txt)
+        client.channels.get(constants.testBotChannel.toString()).send(msg)
+            /*.then((message) => {
+                setTimeout(() => {
+                    message.delete()
+                }, constants.millisToDeleteBotMessage)
+            })*/
+    }
+}
 
-    //client.channels.get(constants.testBotChannel.toString()).send(msg)
-    console.log(msg)
+
+//get storyTeller message from file based on the diference 
+function getStMessage() {
+    let message
+
+    let target = general.getCalculated().target
+    let distance = general.getCalculated().distance
+
+    if (distance >= 0) {
+        let index = Math.ceil(distance / 50)
+
+        //send message only if index has changed
+        if (index !== lastIndex) {
+
+            let message = stMessages[index]
+
+            message = message.toString().replace('<target>', target)
+            message = message.toString().replace('<distance>', distance)
+
+            lastIndex = index
+
+            return message
+        }
+    }
 }
