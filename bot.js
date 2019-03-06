@@ -12,7 +12,7 @@ let server = require('./app/server.js')
 //singleton instance of data
 let general = require('./app/models/generalModel')
 
-//for not cache de print image
+//for not cache of print image
 const moment = require('moment')
 
 /*************************************************** initialization ***************************************************/
@@ -157,26 +157,26 @@ function reoganizeContent(content) {
 let now = new Date()
 
 //calc the diff between now and hourStart, in ms
-let millisTo9 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), constants.hourStart, 0, 0, 0) - now
-if (millisTo9 < 0) {
-    millisTo9 += 86400000
+let millisToHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), constants.hourStart, 0, 0, 0) - now
+if (millisToHourStart < 0) {
+    millisToHourStart += 86400000
 }
 //calc the diff between now and hourStop, in ms
-let millisTo13 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), constants.hourStop, 0, 0, 0) - now
-if (millisTo13 < 0) {
-    millisTo13 += 86400000
+let millisToHourStop = new Date(now.getFullYear(), now.getMonth(), now.getDate(), constants.hourStop, 0, 0, 0) - now
+if (millisToHourStop < 0) {
+    millisToHourStop += 86400000
 }
 
 /*************************************************** StoryTeller Control ***************************************************/
 //start storyTeller
 setTimeout(() => {
     startStoryTeller()
-}, millisTo9)
+}, millisToHourStart)
 
 const hourNow = new Date().getHours()
 
 //start story teller if it's between time execution
-if (hourNow > constants.hourStart && hourNow < constants.hourStop) {
+if (hourNow >= constants.hourStart && hourNow <= constants.hourStop) {
     //if (hourNow > constants.hourStart && hourNow < 14) {
     //wait server initiate, to start storyTeller
     console.log('Iniciado por estar dentro do intervalo de horas (não foi agendado!)')
@@ -188,7 +188,7 @@ if (hourNow > constants.hourStart && hourNow < constants.hourStop) {
 //stop storyTeller
 setTimeout(() => {
     stopStoryteller()
-}, millisTo13)
+}, millisToHourStop)
 
 //controller of execution
 let storyTeller
@@ -217,8 +217,8 @@ function stopStoryteller() {
     clearInterval(storyTeller)
 }
 
-//control of las index sended
-let lastIndex = -1
+//control of last indexes sended
+let lastIndexes = [-1, -1]
 
 //encapsulated send message
 function storyTellerSender(txt) {
@@ -242,18 +242,22 @@ function getStMessage() {
     let target = general.getCalculated().target
     let distance = general.getCalculated().distance
 
-    if (distance >= 0) {
+    if (distance >= 0 && typeof distance === 'number') {
         let index = Math.ceil(distance / 50)
 
-        //send message only if index has changed
-        if (index !== lastIndex) {
+        if (lastIndexes.indexOf(index) == -1 && !isNaN(index)) {
+            //send message only if index has changed
 
             let message = stMessages[index]
 
             message = message.toString().replace('<target>', target)
             message = message.toString().replace('<distance>', distance)
 
-            lastIndex = index
+            if (lastIndexes.length > 2) {
+                lastIndexes.shift()
+            }
+
+            lastIndexes.push(index)
 
             return message
         }
