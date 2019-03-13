@@ -19,31 +19,37 @@ let serverData = {
 }
 
 let calculated = {
-        buyLine: "",
-        sellLine: "",
-        diffBuy: "",
-        diffSell: "",
-        target: "",
-        distance: ""
-    }
-    /*
-    let isPlaced = false
-    let isPositioned = false
+    buyLine: "",
+    sellLine: "",
+    diffBuy: "",
+    diffSell: "",
+    target: "",
+    distance: ""
+}
 
-    let placed = {
-        tipe: '',
-        time: '',
-        price: '',
-        target: ''
-    }
+let placed = {
+    isPlaced: false,
+    type: '',
+    time: '',
+    price: '',
+    target: '',
+    messageSended: false,
+    isCanceled: false
+}
 
-    let position = {
-        tipe: '',
-        time: '',
-        price: '',
-        target: ''
-    }
-    */
+let position = {
+    isPositioned: false,
+    type: '',
+    price: '',
+    time: '',
+    stopLoss: '',
+    takeProfit: '',
+    messageSended: false,
+    refresh: false,
+    isTerminated: false
+}
+
+
 module.exports = {
     getBasicData: () => basicData,
     setBasicData: (d) => basicData = d,
@@ -55,9 +61,7 @@ module.exports = {
     setServerData: (d) => serverData = d,
 
     getCalculated: () => calculated,
-    setCalculated: (d) => calculated = d
-
-    /*
+    setCalculated: (d) => calculated = d,
 
     getPlaced: () => placed,
     setPlaced: (d) => placed = d,
@@ -65,10 +69,5 @@ module.exports = {
     getPosition: () => position,
     setPosition: (d) => position = d,
 
-    getIsPlaced: () => isPlaced,
-    setIsPlaced: (bol) => isPlaced = bol,
 
-    getIsPositioned: () => isPositioned,
-    setIsPositioned: (bol) => isPositioned = bol
-    */
 }

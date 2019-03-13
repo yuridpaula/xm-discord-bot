@@ -5,7 +5,9 @@ module.exports = function(app) {
     return {
         basic,
         ima,
-        server
+        server,
+        placed,
+        positioned
     }
 
     function basic(req, res) {
@@ -29,11 +31,22 @@ module.exports = function(app) {
 
     function ima(req, res) {
         general.setImaData(req.body)
+
         res.send('ok')
     }
 
     function server(req, res) {
         general.setServerData(req.body)
+        res.send('ok')
+    }
+
+    function placed(req, res) {
+        general.setPlaced(req.body)
+        res.send('ok')
+    }
+
+    function positioned(req, res) {
+        general.setPosition(req.body)
         res.send('ok')
     }
 }

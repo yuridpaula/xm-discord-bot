@@ -175,6 +175,7 @@ setTimeout(() => {
 
 const hourNow = new Date().getHours()
 
+// verify best way to control it
 //start story teller if it's between time execution
 if (hourNow >= constants.hourStart && hourNow <= constants.hourStop) {
     //if (hourNow > constants.hourStart && hourNow < 14) {
@@ -182,7 +183,7 @@ if (hourNow >= constants.hourStart && hourNow <= constants.hourStop) {
     console.log('Iniciado por estar dentro do intervalo de horas (não foi agendado!)')
     setTimeout(() => {
         startStoryTeller()
-    }, constants.millisToDeleteBotMessage)
+    }, constants.millisToSendSTMessage)
 }
 
 //stop storyTeller
@@ -235,31 +236,85 @@ function storyTellerSender(txt) {
 }
 
 
-//get storyTeller message from file based on the diference 
+//get storyTeller message
 function getStMessage() {
-    let message
+    let position = general.getPosition()
+    let placed = general.getPlaced()
+    let message = undefined
 
-    let target = general.getCalculated().target
-    let distance = general.getCalculated().distance
+    if (position.isPositioned) {
+        //control of positions
+        let points
 
-    if (distance >= 0 && typeof distance === 'number') {
-        let index = Math.ceil(distance / 50)
+        if (position.type == 'VENDA') {
+            points = position.price - general.getBasicData().sellPrice
+        } else {
+            points = general.getBasicData().buyPrice - position.price
+        }
 
-        if (lastIndexes.indexOf(index) == -1 && !isNaN(index)) {
-            //send message only if index has changed
+        if (position.isTerminated) {
+            message = `Dia encerrado aqui galera!!! ${points} no final do pregão!! Bora que amanhã tem mais!! :sunglasses:`
 
-            let message = stMessages[index]
+            position.isPositioned = false
 
-            message = message.toString().replace('<target>', target)
-            message = message.toString().replace('<distance>', distance)
+            msg = `<@${client.user.id}> imagem ${(points > 0) ? 'gain' : 'loss'}`
 
-            if (lastIndexes.length > 2) {
-                lastIndexes.shift()
+            client.channels.get(constants.testBotChannel.toString()).send(msg)
+            stopStoryteller()
+
+        } else if (position.refresh) {
+
+            message = `E vamos assim, **${points} pontos!!** **TP** em **${position.takeProfit}** e **SL** em **${position.stopLoss}**`
+            position.refresh = false
+
+        } else if (!position.messageSended) {
+            message = `Pegou aqui!!! **${position.type}** em **${position.price}!!** Solta o fodete!!!`
+            position.messageSended = true
+
+            msg = `<@${client.user.id}> imagem ${(position.type == "VENDA") ? 'down' : 'up'}`
+            client.channels.get(constants.testBotChannel.toString()).send(msg)
+        }
+
+        general.setPosition(position)
+
+    } else if (placed.isPlaced) {
+        if (placed.isCanceled) {
+            message = `Poxa, cancelou a ordem... esse mercado não ta ajudando hein :frowning2:`
+
+            placed.isCanceled = false
+            placed.isPlaced = false
+        } else if (!placed.messageSended) {
+
+            message = `Aqui pendurou galera!!! Pegou no **${placed.price}**, **${placed.type}** em **${placed.target}**`
+
+            placed.messageSended = true
+        }
+
+        general.setPlaced(placed)
+    } else {
+        let target = general.getCalculated().target
+        let distance = general.getCalculated().distance
+
+        if (distance >= 0 && typeof distance === 'number') {
+            let index = Math.ceil(distance / 50)
+
+            if (lastIndexes.indexOf(index) == -1 && !isNaN(index)) {
+                //send message only if index has changed
+
+                message = stMessages[index]
+
+                message = message.toString().replace('<target>', target)
+                message = message.toString().replace('<distance>', distance)
+
+                if (lastIndexes.length > 2) {
+                    lastIndexes.shift()
+                }
+
+                lastIndexes.push(index)
+
             }
-
-            lastIndexes.push(index)
-
-            return message
         }
     }
+
+    return message
 }

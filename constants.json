@@ -3,7 +3,8 @@
     "canStoryTellerSend": true,
     "stringSeparator": " ",
     "initialText": ":robot: **Atenção {user}!!** \n",
-    "millisToDeleteBotMessage": 60000,
+    "millisToDeleteBotMessage": 10000,
+    "millisToSendSTMessage": 1000,
     "hourStart": 9,
     "hourStop": 13,
     "replaceConsts": [
