@@ -15,6 +15,9 @@ let general = require('./app/models/generalModel')
 //for not cache of print image
 const moment = require('moment')
 
+// for jobs implementation
+const CronJob = require('./node_modules/cron/lib/cron.js').CronJob;
+
 /*************************************************** initialization ***************************************************/
 // logger configuration
 logger.remove(logger.transports.Console)
@@ -36,52 +39,55 @@ client.on('ready', (event) => {
 
 //listener of messages server
 client.on('message', (msg) => {
+    try {
+        //specific channel messages
+        sendSpecificChannelMessage(msg)
 
-    //specific channel messages
-    sendSpecificChannelMessage(msg)
+        //verify mentions
+        if (msg.mentions.members.first() !== undefined) {
+            //mentions collections without bot mention
+            let mentions = msg.mentions.users.filter(f => f.id !== client.user.id)
 
-    //verify mentions
-    if (msg.mentions.members.first() !== undefined) {
-        //mentions collections without bot mention
-        let mentions = msg.mentions.users.filter(f => f.id !== client.user.id)
+            //compare both for identify bot mentions
+            if (mentions.size !== msg.mentions.users.size) {
 
-        //compare both for identify bot mentions
-        if (mentions.size !== msg.mentions.users.size) {
+                let args = reoganizeContent(msg.content)
 
-            let args = reoganizeContent(msg.content)
+                //verify basic text
+                let txt = basics[args[1]]
 
-            //verify basic text
-            let txt = basics[args[1]]
+                if (txt !== undefined) {
+                    txt = constants.initialText + txt
 
-            if (txt !== undefined) {
-                txt = constants.initialText + txt
+                    txt = replaceConstants(txt, mentions)
 
-                txt = replaceConstants(txt, mentions)
+                    msg.channel.send(txt)
+                        /*.then((message) => {
+                            setTimeout(() => {
+                                message.delete()
+                            }, constants.millisToDeleteBotMessage)
+                        })*/
 
-                msg.channel.send(txt)
-                    /*.then((message) => {
-                        setTimeout(() => {
-                            message.delete()
-                        }, constants.millisToDeleteBotMessage)
-                    })*/
+                } else if (args[1] === 'imagem') {
 
-            } else if (args[1] === 'imagem') {
+                    msg.channel.send(new Attachment(`./imagens/${args[2]}.png`))
+                        /*.then((message) => {
+                            setTimeout(() => {
+                                message.delete()
+                            }, constants.millisToDeleteBotMessage)
+                        })*/
+                } else if (args[1] === 'print') {
+                    //const url = `https://ashita.com.br/xmprint?t=${moment().format()}`
+                    const url = 'Foi mal galera, o print encontra-se temporariamente desabilitado'
+                    msg.channel.send(url)
+                }
 
-                msg.channel.send(new Attachment(`./imagens/${args[2]}.png`))
-                    /*.then((message) => {
-                        setTimeout(() => {
-                            message.delete()
-                        }, constants.millisToDeleteBotMessage)
-                    })*/
-            } else if (args[1] === 'print') {
-                const url = `https://ashita.com.br/xmprint?t=${moment().format()}`
-
-                msg.channel.send(url)
+                //delete message that triggered the bot
+                msg.delete()
             }
-
-            //delete message that triggered the bot
-            msg.delete()
         }
+    } catch (e) {
+        logger.info('Error on client.on(message)\n' + e)
     }
 })
 
@@ -97,18 +103,21 @@ function sendSpecificChannelMessage(msg) {
         let hasCorretora = false
         let hasCloud = false
         let hasPontos = false
+        let hasSet = false
 
         args.forEach((a) => {
             onlyNumbers = onlyNumbers || (a.match(/\d+/g) !== null)
             hasCorretora = hasCorretora || a.toString().toLowerCase() === 'corretora'
             hasCloud = hasCloud || a.toString().toLowerCase() === 'cloud'
             hasPontos = hasPontos || a.toString().toLowerCase() === 'pontos'
+            hasSet = hasSet || a.toString().toLowerCase() === 'set'
         })
 
         if (!(onlyNumbers && //Some word with only number
                 hasCorretora && // The word 'corretora' in the message
                 hasCloud && // The word 'cloud' in the message
-                hasPontos) // The word 'pontos' in the message
+                hasPontos && // The word 'pontos' in the message
+                hasSet) // The word 'set' in the message
         ) {
             let txt = constants.initialText + basics['pattern-gain-loss']
 
@@ -153,50 +162,39 @@ function reoganizeContent(content) {
     return content.replace(/  +/g, constants.stringSeparator).split(constants.stringSeparator)
 }
 
-/*************************************************** Time Controllers ***************************************************/
-let now = new Date()
+/*************************************************** Cron Jobs ***************************************************/
+/*
+Cron Ranges
+When specifying your cron values you'll need to make sure that your values fall within the ranges. 
+For instance, some cron's use a 0-7 range for the day of week where both 0 and 7 represent Sunday. We do not.
 
-//calc the diff between now and hourStart, in ms
-let millisToHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), constants.hourStart, 0, 0, 0) - now
-if (millisToHourStart < 0) {
-    millisToHourStart += 86400000
-}
-//calc the diff between now and hourStop, in ms
-let millisToHourStop = new Date(now.getFullYear(), now.getMonth(), now.getDate(), constants.hourStop, 0, 0, 0) - now
-if (millisToHourStop < 0) {
-    millisToHourStop += 86400000
-}
+Seconds: 0-59
+Minutes: 0-59
+Hours: 0-23
+Day of Month: 1-31
+Months: 0-11 (Jan-Dec)
+Day of Week: 0-6 (Sun-Sat)
 
-/*************************************************** StoryTeller Control ***************************************************/
-//start storyTeller
-setTimeout(() => {
-    startStoryTeller()
-}, millisToHourStart)
+constructor(
+    cronTime, -- required
+    onTick,  -- required
+    onComplete, -- optional
+    start, --optional
+    timezone, --optional
+    context, --optional
+    runOnInit,  --optional
+    unrefTimeout) -- optional
+*/
 
-const hourNow = new Date().getHours()
 
-// verify best way to control it
-//start story teller if it's between time execution
-if (hourNow >= constants.hourStart && hourNow <= constants.hourStop) {
-    //if (hourNow > constants.hourStart && hourNow < 14) {
-    //wait server initiate, to start storyTeller
-    console.log('Iniciado por estar dentro do intervalo de horas (não foi agendado!)')
-    setTimeout(() => {
-        startStoryTeller()
-    }, constants.millisToSendSTMessage)
-}
+const stJob = new CronJob('* * * * * *', () => {
+    let msg = getStMessage()
+    if (msg !== undefined) {
+        storyTellerSender(msg)
+    }
+})
 
-//stop storyTeller
-setTimeout(() => {
-    stopStoryteller()
-}, millisToHourStop)
-
-//controller of execution
-let storyTeller
-
-//control of execution timer
-function startStoryTeller() {
-
+const startSTJob = new CronJob(`00 ${constants.minuteStart} ${constants.hourStart} * * 1-5`, () => {
     let message = `Iniciado em  ${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString()}\n`
     message += `Corretora: **${general.getServerData().broker}**\n`
     message += `Servidor: **${general.getServerData().server}**\n`
@@ -204,20 +202,31 @@ function startStoryTeller() {
 
     storyTellerSender(message)
 
-    storyTeller = setInterval(() => {
-        let msg = getStMessage()
-        if (msg !== undefined) {
-            storyTellerSender(msg)
+    stJob.start()
+})
+const stopSTJob = new CronJob(`00 ${constants.minuteStop} ${constants.hourStop} * * 1-5`, () => {
+    if (!general.getPosition().isPositioned) {
+        if (stJob.running) {
+            storyTellerSender('Finalizado em ' + new Date().toLocaleDateString() + ' - ' + new Date().toLocaleTimeString())
+            stJob.stop()
         }
-    }, constants.millisToDeleteBotMessage)
+    }
+})
+const forceStopSTJob = new CronJob(`00 ${constants.minuteStopWithPosition} ${constants.hourStopWithPosition} * * 1-5`, () => {
+    if (stJob.running) {
+        storyTellerSender('Finalizado em ' + new Date().toLocaleDateString() + ' - ' + new Date().toLocaleTimeString())
+        stJob.stop()
+    }
+})
+
+//Start crons only if is enabled
+if (constants.isStoryTellerEnabled) {
+    startSTJob.start()
+    stopSTJob.start()
+    forceStopSTJob.start()
 }
 
-//clear the execution of interval
-function stopStoryteller() {
-    storyTellerSender('Finalizado em ' + new Date().toLocaleDateString() + ' - ' + new Date().toLocaleTimeString())
-    clearInterval(storyTeller)
-}
-
+/*************************************************** StoryTeller Control ***************************************************/
 //control of last indexes sended
 let lastIndexes = [-1, -1]
 
@@ -226,95 +235,109 @@ function storyTellerSender(txt) {
     if (constants.canStoryTellerSend) {
         let msg = `**:microphone2: XMBot Narrador Oficial! :microphone2:** \n${txt}`
             //console.log(txt)
-        client.channels.get(constants.testBotChannel.toString()).send(msg)
-            /*.then((message) => {
-                setTimeout(() => {
-                    message.delete()
-                }, constants.millisToDeleteBotMessage)
-            })*/
+        client.channels.get(constants.storyTellerChannel.toString()).send(msg)
     }
 }
 
-
 //get storyTeller message
 function getStMessage() {
-    let position = general.getPosition()
-    let placed = general.getPlaced()
-    let message = undefined
+    try {
+        let position = general.getPosition()
+        let placed = general.getPlaced()
+        let message = undefined
 
-    if (position.isPositioned) {
-        //control of positions
-        let points
+        if (position.isPositioned) {
 
-        if (position.type == 'VENDA') {
-            points = position.price - general.getBasicData().sellPrice
-        } else {
-            points = general.getBasicData().buyPrice - position.price
-        }
+            //control of positions
+            let points
 
-        if (position.isTerminated) {
-            message = `Dia encerrado aqui galera!!! ${points} no final do pregão!! Bora que amanhã tem mais!! :sunglasses:`
+            if (position.type == 'VENDA') {
+                points = Number(position.price) - Number(general.getBasicData().sellPrice)
+            } else {
+                points = Number(general.getBasicData().buyPrice) - Number(position.price)
+            }
 
-            position.isPositioned = false
+            if (position.isTerminated) {
+                message = `Dia encerrado aqui galera!!! ${points} pontos no final do pregão!! Bora que amanhã tem mais!! :sunglasses:`
 
-            msg = `<@${client.user.id}> imagem ${(points > 0) ? 'gain' : 'loss'}`
+                position.isPositioned = false
 
-            client.channels.get(constants.testBotChannel.toString()).send(msg)
-            stopStoryteller()
+                setTimeout(() => {
+                    let msg = `<@${client.user.id}> imagem ${(points > 0) ? 'gain' : 'loss'}`
+                    client.channels.get(constants.storyTellerChannel.toString()).send(msg)
+                }, constants.millisToSendSTMessage)
 
-        } else if (position.refresh) {
+                let msg = `${new Date().toLocaleDateString()} - fiz ${points} pontos com o XM na corretora ${general.getServerData().broker}!!** `
 
-            message = `E vamos assim, **${points} pontos!!** **TP** em **${position.takeProfit}** e **SL** em **${position.stopLoss}**`
-            position.refresh = false
+                //trocar
+                client.channels.get(constants.storyTellerChannel.toString()).send(msg)
 
-        } else if (!position.messageSended) {
-            message = `Pegou aqui!!! **${position.type}** em **${position.price}!!** Solta o fodete!!!`
-            position.messageSended = true
+                stJob.stop()
 
-            msg = `<@${client.user.id}> imagem ${(position.type == "VENDA") ? 'down' : 'up'}`
-            client.channels.get(constants.testBotChannel.toString()).send(msg)
-        }
+            } else if (!position.messageSended) {
+                message = `Pegou aqui!!! **${position.type}** em **${position.price}!!** Solta o fodete!!!`
+                position.messageSended = true
 
-        general.setPosition(position)
+                setTimeout(() => {
+                    msg = `<@${client.user.id}> imagem ${(position.type == "VENDA") ? 'down' : 'up'}`
+                    client.channels.get(constants.storyTellerChannel.toString()).send(msg)
+                }, constants.millisToSendSTMessage)
 
-    } else if (placed.isPlaced) {
-        if (placed.isCanceled) {
-            message = `Poxa, cancelou a ordem... esse mercado não ta ajudando hein :frowning2:`
-
-            placed.isCanceled = false
-            placed.isPlaced = false
-        } else if (!placed.messageSended) {
-
-            message = `Aqui pendurou galera!!! Pegou no **${placed.price}**, **${placed.type}** em **${placed.target}**`
-
-            placed.messageSended = true
-        }
-
-        general.setPlaced(placed)
-    } else {
-        let target = general.getCalculated().target
-        let distance = general.getCalculated().distance
-
-        if (distance >= 0 && typeof distance === 'number') {
-            let index = Math.ceil(distance / 50)
-
-            if (lastIndexes.indexOf(index) == -1 && !isNaN(index)) {
-                //send message only if index has changed
-
-                message = stMessages[index]
-
-                message = message.toString().replace('<target>', target)
-                message = message.toString().replace('<distance>', distance)
-
-                if (lastIndexes.length > 2) {
-                    lastIndexes.shift()
-                }
-
-                lastIndexes.push(index)
+            } else if (position.refresh) {
+                message = `E vamos assim, **${points} pontos!!** **TP** em **${position.takeProfit}** e **SL** em **${position.stopLoss}**`
+                position.refresh = false
+                position.messageSended = true
 
             }
-        }
-    }
 
-    return message
+            general.setPosition(position)
+
+            //controle of placed order
+        } else if (placed.isPlaced) {
+
+            if (placed.isCanceled) {
+                message = `Poxa, cancelou a ordem... esse mercado não ta ajudando hein :frowning2:`
+
+                placed.isCanceled = false
+                placed.isPlaced = false
+            } else if (!placed.messageSended) {
+
+                message = `Aqui pendurou galera!!! Pegou no **${placed.price}**, **${placed.type}** em **${placed.target}**`
+
+                placed.messageSended = true
+            }
+
+            general.setPlaced(placed)
+
+            //default message control
+        } else {
+            let target = general.getCalculated().target
+            let distance = general.getCalculated().distance
+
+            if (distance >= 0 && typeof distance === 'number') {
+                let index = Math.ceil(distance / 50)
+
+                //send message only if index has changed
+                if (lastIndexes.indexOf(index) == -1 && !isNaN(index)) {
+
+                    message = stMessages[index]
+
+                    message = message.toString().replace('<target>', target)
+                    message = message.toString().replace('<distance>', distance)
+
+                    if (lastIndexes.length > 2) {
+                        lastIndexes.shift()
+                    }
+
+                    lastIndexes.push(index)
+
+                }
+            }
+        }
+
+        return message
+    } catch (e) {
+        logger.info('Error on getStMessage\n' + e)
+        return undefined
+    }
 }

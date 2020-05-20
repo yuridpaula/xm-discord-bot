@@ -41,12 +41,34 @@ module.exports = function(app) {
     }
 
     function placed(req, res) {
-        general.setPlaced(req.body)
+        let placed = general.getPlaced()
+
+        placed.isPlaced = (req.body.isPlaced == 'true')
+        placed.type = req.body.type
+        placed.time = req.body.time
+        placed.price = Number(req.body.price)
+        placed.target = Number(req.body.target)
+        placed.messageSended = (req.body.messageSended == 'true')
+        placed.isCanceled = (req.body.isCanceled == 'true')
+
+        general.setPlaced(placed)
         res.send('ok')
     }
 
     function positioned(req, res) {
-        general.setPosition(req.body)
+        let positined = general.getPosition()
+
+        positined.isPositioned = (req.body.isPositioned == 'true')
+        positined.type = req.body.type
+        positined.price = Number(req.body.price)
+        positined.time = req.body.time
+        positined.stopLoss = Number(req.body.stopLoss)
+        positined.takeProfit = Number(req.body.takeProfit)
+        positined.messageSended = (req.body.messageSended == 'true')
+        positined.refresh = (req.body.refresh == 'true')
+        positined.isTerminated = (req.body.isTerminated == 'true')
+
+        general.setPosition(positioned)
         res.send('ok')
     }
 }

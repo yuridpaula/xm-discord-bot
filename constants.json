@@ -1,16 +1,25 @@
 {
+    "isStoryTellerEnabled": false,
     "canSendGainLoss": true,
     "canStoryTellerSend": true,
     "stringSeparator": " ",
     "initialText": ":robot: **Atenção {user}!!** \n",
     "millisToDeleteBotMessage": 10000,
     "millisToSendSTMessage": 1000,
+
     "hourStart": 9,
-    "hourStop": 13,
+    "minuteStart": 30,
+    "hourStop": 12,
+    "minuteStop": 0,
+    "hourStopWithPosition": 13,
+    "minuteStopWithPosition": 0,
+
+
     "replaceConsts": [
         "welcomeChannel",
         "generalChannel",
         "gainLossChannel",
+        "setChannel",
         "storyTellerChannel",
         "tutorialChannel",
         "marginLimit",
@@ -19,7 +28,8 @@
     "welcomeChannel": "525399168538116117",
     "generalChannel": "527898002757648408",
     "gainLossChannel": "525282202590773249",
-    "storyTellerChannel": "526897481380921364",
+    "setChannel": "560075232656883713",
+    "storyTellerChannel": "543090620009414656",
     "testBotChannel": "543090620009414656",
     "tutorialChannel": "527898002757648408",
     "marginLimit": "R$1.400,00",

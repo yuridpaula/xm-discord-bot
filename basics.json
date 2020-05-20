@@ -4,7 +4,8 @@
     "manual": "Não é permitido comentar sobre operações manuais nesse servidor!! finalText",
     "margem": "A margem atual **RECOMENDADA** é de **marginLimit** por contrato, porém, fica a critério de cada um o valor que irá usar. finalText",
     "outro-robo": "Não é permitido comentar sobre outros robos nesse servidor!! finalText",
-    "pattern-gain-loss": "Você não está respeitando o padrão de mensagem solicitado para o canal. Por favor seguir: \n**Dia DD/MM/AAAA ganhei/perdi XXXX pontos com o XM na corretora YYYYYY com cloud WWWWW!!** finalText",
+    "pattern-gain-loss": "Você não está respeitando o padrão de mensagem solicitado para o canal. Por favor seguir: \n**Dia DD/MM/AAAA ganhei/perdi XXXX pontos com o XM na corretora YYYYYY com cloud WWWWW, SET tal !!** finalText",
+    "set": "As informações de alterações do SET encontram-se no canal <#setChannel>, da uma olhadinha lá!! :wink: ",
     "teoria": "Ao entrar aqui, você foi direcionado para o canal <#welcomeChannel>, onde encontra-se a teoria. \nPor favor, leia **TUDO** antes de qualquer pergunta! finalText",
     "troca-contrato": "A troca de contrato ocorre sempre na **quarta-feira mais próxima do dia 15, nos meses pares do ano**. \n Em caso de dúvidas, temos uma imagem no <#tutorialChannel> que pode te ajudar ",
 
